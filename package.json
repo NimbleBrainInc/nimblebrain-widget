@@ -1,0 +1,55 @@
+{
+  "name": "@nimblebrain/widget",
+  "version": "1.1.0",
+  "description": "Embeddable chatbot widget for NimbleBrain agents",
+  "main": "dist/widget.js",
+  "module": "dist/widget.js",
+  "types": "dist/widget.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "chatbot",
+    "widget",
+    "ai",
+    "customer-support",
+    "embeddable"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.nimblebrain.ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NimbleBrainInc/nimblebrain-widget.git"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/ node_modules/.cache",
+    "build": "webpack --mode=production",
+    "build:prod": "webpack --config webpack.prod.config.js",
+    "build:cdn": "npm run build:prod && npm run version:inject",
+    "dev": "webpack --mode=development --watch",
+    "serve": "http-server dist -p 8080",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "version:inject": "node scripts/inject-version.js",
+    "deploy:prepare": "npm run build:cdn && npm run deploy:rename",
+    "deploy:rename": "node scripts/rename-for-cdn.js",
+    "publish": "npm run build:cdn && npm publish --access public",
+    "deploy:cloudflare": "npm run deploy:prepare && wrangler pages deploy dist --project-name nimblebrain-widget-cdn",
+    "deploy:cf-staging": "npm run deploy:prepare && wrangler pages deploy dist --project-name nimblebrain-widget-staging",
+    "wrangler:login": "wrangler login",
+    "wrangler:whoami": "wrangler whoami"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "http-server": "^14.1.1",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.7.3",
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1",
+    "wrangler": "^4.26.1"
+  }
+}

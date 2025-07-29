@@ -1,0 +1,5 @@
+name = "nimblebrain-widget-cdn"
+compatibility_date = "2024-01-01"
+
+# For Cloudflare Pages deployment
+pages_build_output_dir = "dist"

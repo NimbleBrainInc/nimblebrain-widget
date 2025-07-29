@@ -1,0 +1,10 @@
+# Redirect latest version requests
+/latest/* /widget-latest.js 200
+/v1/* /widget-v1.1.0.js 200
+
+# Handle version-specific requests
+/v1.1.0/* /widget-v1.1.0.js 200
+/v1.0.0/* /widget-v1.0.0.js 200
+
+# Fallback for any version request to latest
+/v*/* /widget-latest.js 200

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Widget Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+        .content {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Simple Widget Test</h1>
+        <p>Test the NimbleBrain widget with a simple interface.</p>
+
+        <div>
+            <label for="agentId">Agent ID:</label><br>
+            <input type="text" id="agentId" value="7d11b723-5eaa-4531-b1e8-d2fab52af2ba" style="width: 300px;"><br>
+
+            <label for="apiUrl">API URL:</label><br>
+            <input type="text" id="apiUrl" value="https://api.nimblebrain.ai" style="width: 300px;"><br>
+
+            <button onclick="testWidget()">Test Widget</button>
+            <button onclick="removeWidget()">Remove Widget</button>
+        </div>
+
+        <div id="status">Ready to test...</div>
+    </div>
+
+    <script>
+        let currentWidget = null;
+
+        function log(message) {
+            console.log(message);
+            document.getElementById('status').innerHTML += '<br>' + message;
+        }
+
+        function testWidget() {
+            const agentId = document.getElementById('agentId').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+
+            if (!agentId) {
+                log('❌ Please enter an Agent ID');
+                return;
+            }
+
+            log('🔄 Testing widget creation...');
+
+            try {
+                // Remove any existing widget
+                removeWidget();
+
+                // Create widget directly using the class
+                const ChatWidget = window.NimbleBrainWidget;
+
+                if (typeof ChatWidget !== 'function') {
+                    log('❌ ChatWidget class not available. Type: ' + typeof ChatWidget);
+                    return;
+                }
+
+                log('✅ ChatWidget class found');
+
+                const options = {
+                    agentId: agentId,
+                    apiUrl: apiUrl,
+                    position: 'bottom-right'
+                };
+
+                log('🔄 Creating widget with options: ' + JSON.stringify(options));
+
+                currentWidget = new ChatWidget(options);
+
+                log('✅ Widget created successfully! Look for chat button in bottom-right corner.');
+
+                // Wait a moment and check if widget initialized properly
+                setTimeout(() => {
+                    const widgetContainer = document.querySelector('.nb-widget-container');
+                    if (widgetContainer) {
+                        const errorElement = widgetContainer.querySelector('.nb-widget-error');
+                        if (errorElement) {
+                            log('⚠️ Widget created but has error: ' + errorElement.textContent);
+                        } else {
+                            log('✅ Widget is fully functional!');
+                        }
+                    }
+                }, 2000);
+
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                console.error('Full error:', error);
+
+                // Show helpful suggestions based on error type
+                if (error.message.includes('Origin not allowed')) {
+                    log('💡 Solution: Add ' + window.location.origin + ' to your agent\'s allowed origins in NimbleBrain dashboard');
+                } else if (error.message.includes('Agent not found')) {
+                    log('💡 Solution: Verify the agent ID is correct and you have access to it');
+                } else if (error.message.includes('Rate limit exceeded')) {
+                    log('💡 Solution: Wait 1-2 minutes before trying again, or contact support if this persists');
+                } else if (error.message.includes('fetch')) {
+                    log('💡 Solution: Check if the API server is running at ' + apiUrl);
+                }
+            }
+        }
+
+        function removeWidget() {
+            if (currentWidget && typeof currentWidget.destroy === 'function') {
+                currentWidget.destroy();
+                currentWidget = null;
+                log('🗑️ Widget removed');
+            }
+
+            // Fallback cleanup
+            const widgets = document.querySelectorAll('.nb-widget-container');
+            widgets.forEach(w => w.remove());
+        }
+
+        // Load the widget script and test availability
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                log('📊 Checking widget availability...');
+                log('window.NimbleBrainWidget type: ' + typeof window.NimbleBrainWidget);
+
+                if (typeof window.NimbleBrainWidget === 'function') {
+                    log('✅ Widget ready for testing!');
+                } else {
+                    log('❌ Widget not loaded properly');
+                }
+            }, 500);
+        });
+    </script>
+
+    <!-- Load widget script -->
+    <script src="./widget.js"></script>
+</body>
+</html>

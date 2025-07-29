@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare CDN Widget Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .success { background: rgba(40, 167, 69, 0.2); border: 1px solid #28a745; }
+        .error { background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545; }
+        .info { background: rgba(23, 162, 184, 0.2); border: 1px solid #17a2b8; }
+        .warning { background: rgba(255, 193, 7, 0.2); border: 1px solid #ffc107; color: #212529; }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .url-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        
+        .feature-highlight {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .icon-demo {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Cloudflare CDN Widget Test</h1>
+        <p>Testing the NimbleBrain widget loaded from Cloudflare Pages CDN</p>
+        
+        <div class="test-section">
+            <h3>📡 CDN Endpoints</h3>
+            <div class="url-display">
+                <strong>Primary:</strong><br>
+                https://94847fd8.nimblebrain-widget-cdn.pages.dev/widget-latest.js
+            </div>
+            <div class="url-display">
+                <strong>Branch:</strong><br>
+                https://mat-workflow-fixes.nimblebrain-widget-cdn.pages.dev/widget-latest.js
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Controls</h3>
+            <button onclick="loadWidget()">Load Widget from CDN</button>
+            <button onclick="checkManifest()">Check Manifest</button>
+            <button onclick="testCORS()">Test CORS Headers</button>
+            <button onclick="removeWidget()" disabled id="removeBtn">Remove Widget</button>
+        </div>
+
+        <div class="test-section">
+            <h3>✨ New Features in v1.1.0</h3>
+            <div class="feature-highlight">
+                <strong>🔄 Icon Transition:</strong> Watch the chat button! The brain icon smoothly transitions to a down caret when the chat window opens.
+            </div>
+            <div class="feature-highlight">
+                <strong>🌐 Global CDN:</strong> Now served from 200+ Cloudflare edge locations worldwide for maximum speed.
+            </div>
+            <div class="feature-highlight">
+                <strong>📦 Version Management:</strong> Immutable versioned URLs ensure consistency across deployments.
+            </div>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <div class="icon-demo" id="iconDemo" style="display: none;">
+        <strong>👀 Watch the Icon!</strong><br>
+        Click the chat button to see the brain → caret transition
+    </div>
+
+    <script>
+        let currentWidget = null;
+        const CDN_URL = 'https://94847fd8.nimblebrain-widget-cdn.pages.dev';
+        
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        function loadWidget() {
+            log('🔄 Loading widget from Cloudflare CDN...', 'info');
+            
+            // Remove any existing widget first
+            removeWidget();
+            
+            const script = document.createElement('script');
+            script.src = `${CDN_URL}/widget-latest.js?agentId=7d11b723-5eaa-4531-b1e8-d2fab52af2ba&noAutoInit=true`;
+            
+            script.onload = function() {
+                log('✅ Widget script loaded successfully!', 'success');
+                
+                try {
+                    // Check if the widget class is available
+                    if (typeof window.NimbleBrainWidget === 'function') {
+                        log(`✅ Widget class available (version: ${window.NimbleBrainWidget.version || 'unknown'})`, 'success');
+                        
+                        // Initialize the widget
+                        currentWidget = new window.NimbleBrainWidget({
+                            agentId: '7d11b723-5eaa-4531-b1e8-d2fab52af2ba',
+                            apiUrl: 'http://localhost:3001', // Using local API for testing
+                            position: 'bottom-right'
+                        });
+                        
+                        log('🎉 Widget initialized! Check bottom-right corner', 'success');
+                        document.getElementById('removeBtn').disabled = false;
+                        document.getElementById('iconDemo').style.display = 'block';
+                        
+                    } else {
+                        log('❌ Widget class not found after script load', 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Error initializing widget: ${error.message}`, 'error');
+                }
+            };
+            
+            script.onerror = function() {
+                log('❌ Failed to load widget script from CDN', 'error');
+                log('💡 This might be due to SSL certificate still provisioning (wait 2-5 minutes)', 'warning');
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        function removeWidget() {
+            if (currentWidget && typeof currentWidget.destroy === 'function') {
+                currentWidget.destroy();
+                currentWidget = null;
+                log('🗑️ Widget removed', 'info');
+            }
+            
+            // Cleanup any widget containers
+            const widgets = document.querySelectorAll('.nb-widget-container');
+            widgets.forEach(w => w.remove());
+            
+            document.getElementById('removeBtn').disabled = true;
+            document.getElementById('iconDemo').style.display = 'none';
+        }
+
+        async function checkManifest() {
+            log('🔍 Checking manifest.json...', 'info');
+            
+            try {
+                const response = await fetch(`${CDN_URL}/manifest.json`);
+                
+                if (response.ok) {
+                    const manifest = await response.json();
+                    log(`✅ Manifest loaded: v${manifest.version} (${manifest.integrity['widget-latest.js'].sizeFormatted})`, 'success');
+                    log(`📅 Build date: ${new Date(manifest.buildDate).toLocaleString()}`, 'info');
+                } else {
+                    log(`❌ Manifest request failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Manifest error: ${error.message}`, 'error');
+                log('💡 CDN might still be provisioning SSL certificate', 'warning');
+            }
+        }
+
+        async function testCORS() {
+            log('🔍 Testing CORS headers...', 'info');
+            
+            try {
+                const response = await fetch(`${CDN_URL}/widget-latest.js`, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    const corsOrigin = response.headers.get('access-control-allow-origin');
+                    const corsMethods = response.headers.get('access-control-allow-methods');
+                    
+                    if (corsOrigin === '*') {
+                        log('✅ CORS headers configured correctly', 'success');
+                        log(`📋 Origin: ${corsOrigin}, Methods: ${corsMethods}`, 'info');
+                    } else {
+                        log('⚠️ CORS headers might not be configured', 'warning');
+                    }
+                } else {
+                    log(`❌ CORS test failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ CORS test error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check CDN status on page load
+        window.addEventListener('load', function() {
+            log('🌐 CDN Test Page Loaded', 'success');
+            log('💡 Click "Load Widget from CDN" to test the Cloudflare deployment', 'info');
+            
+            // Auto-check manifest after a short delay
+            setTimeout(checkManifest, 1000);
+        });
+    </script>
+</body>
+</html>

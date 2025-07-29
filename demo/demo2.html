@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NimbleBrain Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>NimbleBrain Widget</h1>
+
+    <input
+        type="text"
+        id="agentId"
+        placeholder="Enter Agent ID"
+        value="92adb92e-53b3-464c-b8b2-e1d1dc595ead"
+    >
+
+    <button onclick="loadWidget()">Load Widget</button>
+
+    <script>
+        let currentWidget = null;
+
+        function loadWidget() {
+            const agentId = document.getElementById('agentId').value.trim();
+
+            if (!agentId) {
+                alert('Please enter an Agent ID');
+                return;
+            }
+
+            // Remove existing widget
+            if (currentWidget && currentWidget.destroy) {
+                currentWidget.destroy();
+            }
+
+            // Remove any existing containers
+            document.querySelectorAll('.nb-widget-container').forEach(el => el.remove());
+
+            // Load widget script with noAutoInit
+            const script = document.createElement('script');
+            script.src = `https://94847fd8.nimblebrain-widget-cdn.pages.dev/widget-latest.js?noAutoInit=true`;
+
+            script.onload = function() {
+                // Manually initialize after script loads
+                if (window.NimbleBrainWidget) {
+                    currentWidget = new window.NimbleBrainWidget({
+                        agentId: agentId,
+                        apiUrl: 'https://api.staging.nimblebrain.ai'
+                    });
+                } else {
+                    alert('Widget failed to load');
+                }
+            };
+
+            script.onerror = function() {
+                alert('Failed to load widget from CDN');
+            };
+
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>
