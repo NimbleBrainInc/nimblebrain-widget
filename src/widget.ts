@@ -315,39 +315,66 @@ if (typeof window !== 'undefined') {
   console.log('NimbleBrain Widget: Class exported to window.NimbleBrainWidget');
 }
 
-// Auto-initialize when script loads (only if agentId is provided)
+// Auto-initialize when script loads
 function initializeWidget(): void {
   try {
-    const currentScript = document.currentScript as HTMLScriptElement;
-    if (!currentScript) {
-      console.log('NimbleBrain Widget: No current script found, skipping auto-initialization');
+    let options: WidgetOptions | null = null;
+
+    // Method 1: Check for global configuration
+    if ((window as any).NimbleBrainConfig) {
+      options = (window as any).NimbleBrainConfig;
+    }
+    // Method 2: Try to get from script src (if available)
+    else if (document.currentScript) {
+      const url = new URL((document.currentScript as HTMLScriptElement).src);
+      
+      if (url.searchParams.has('noAutoInit')) {
+        console.log('NimbleBrain Widget: Auto-initialization disabled');
+        return;
+      }
+      
+      const agentId = url.searchParams.get('agentId');
+      if (agentId) {
+        options = {
+          agentId,
+          apiUrl: url.searchParams.get('apiUrl') || undefined,
+          position: (url.searchParams.get('position') as any) || 'bottom-right',
+          primaryColor: url.searchParams.get('primaryColor') || undefined,
+        };
+      }
+    }
+    // Method 3: Fallback - search for widget script in DOM
+    else {
+      const scripts = Array.from(document.querySelectorAll('script[src]')) as HTMLScriptElement[];
+      for (const script of scripts) {
+        if (script.src.includes('widget') && script.src.includes('nimblebrain')) {
+          const url = new URL(script.src);
+          
+          if (url.searchParams.has('noAutoInit')) {
+            console.log('NimbleBrain Widget: Auto-initialization disabled');
+            return;
+          }
+          
+          const agentId = url.searchParams.get('agentId');
+          if (agentId) {
+            options = {
+              agentId,
+              apiUrl: url.searchParams.get('apiUrl') || undefined,
+              position: (url.searchParams.get('position') as any) || 'bottom-right',
+              primaryColor: url.searchParams.get('primaryColor') || undefined,
+            };
+            break;
+          }
+        }
+      }
+    }
+
+    if (!options || !options.agentId) {
+      console.log('NimbleBrain Widget: No configuration found, skipping auto-initialization');
       return;
     }
 
-    const url = new URL(currentScript.src);
-    
-    // Skip auto-initialization if noAutoInit parameter is present
-    if (url.searchParams.has('noAutoInit')) {
-      console.log('NimbleBrain Widget: Auto-initialization disabled');
-      return;
-    }
-    
-    const agentId = url.searchParams.get('agentId');
-    
-    if (!agentId) {
-      console.log('NimbleBrain Widget: No agentId parameter provided, skipping auto-initialization');
-      return;
-    }
-
-    console.log('NimbleBrain Widget: Auto-initializing with agentId:', agentId);
-
-    const options: WidgetOptions = {
-      agentId,
-      apiUrl: url.searchParams.get('apiUrl') || undefined,
-      position: (url.searchParams.get('position') as any) || 'bottom-right',
-      primaryColor: url.searchParams.get('primaryColor') || undefined,
-    };
-
+    console.log('NimbleBrain Widget: Auto-initializing with agentId:', options.agentId);
     new ChatWidget(options);
   } catch (error) {
     console.error('NimbleBrain Widget: Auto-initialization failed:', error);
