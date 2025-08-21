@@ -79,6 +79,17 @@ export class ChatWidget {
         <img src="${brainLogoWhite}" alt="Chat" class="nb-widget-button-icon" />
         <div class="nb-widget-button-caret"></div>
       </button>
+      <button class="nb-widget-hide" id="nb-hide-widget" title="Hide widget">×</button>
+      <div class="nb-widget-intro-popup" id="nb-intro-popup">
+        <div class="nb-widget-intro-content">
+          <div class="nb-widget-intro-text">
+            <strong>👋 Hi there!</strong><br>
+            I'm your NimbleBrain assistant. Click to ask me anything!
+          </div>
+          <button class="nb-widget-intro-close" id="nb-intro-close">×</button>
+        </div>
+        <div class="nb-widget-intro-arrow"></div>
+      </div>
       <div class="nb-widget-chat" id="nb-chat-container">
         <div class="nb-widget-header">
           <h3>${this.agent?.title || 'Chat'}</h3>
@@ -125,16 +136,23 @@ export class ChatWidget {
     this.messagesContainer = this.container.querySelector('#nb-messages');
     this.inputElement = this.container.querySelector('#nb-message-input') as HTMLTextAreaElement;
     this.sendButton = this.container.querySelector('#nb-send-button') as HTMLButtonElement;
+    
+    // Show intro popup after a brief delay
+    setTimeout(() => this.showIntroPopup(), 1500);
   }
 
   private bindEvents(): void {
     const toggleButton = this.container.querySelector('#nb-toggle-chat');
     const closeButton = this.container.querySelector('#nb-close-chat');
     const resetButton = this.container.querySelector('#nb-reset-chat');
+    const hideButton = this.container.querySelector('#nb-hide-widget');
+    const introClose = this.container.querySelector('#nb-intro-close');
     
     toggleButton?.addEventListener('click', () => this.toggleChat());
     closeButton?.addEventListener('click', () => this.closeChat());
     resetButton?.addEventListener('click', () => this.resetConversation());
+    hideButton?.addEventListener('click', () => this.hideWidget());
+    introClose?.addEventListener('click', () => this.dismissIntroPopup());
 
     if (this.inputElement) {
       this.inputElement.addEventListener('keydown', (e) => {
@@ -173,6 +191,9 @@ export class ChatWidget {
     this.isOpen = true;
     this.chatElement.classList.add('open');
     
+    // Dismiss intro popup when opening chat
+    this.dismissIntroPopup();
+    
     // Toggle button appearance
     const toggleButton = this.container.querySelector('#nb-toggle-chat');
     toggleButton?.classList.add('open');
@@ -195,6 +216,31 @@ export class ChatWidget {
     // Toggle button appearance back
     const toggleButton = this.container.querySelector('#nb-toggle-chat');
     toggleButton?.classList.remove('open');
+  }
+
+  private hideWidget(): void {
+    this.container.style.display = 'none';
+  }
+
+  private showIntroPopup(): void {
+    const popup = this.container.querySelector('#nb-intro-popup');
+    if (popup && !this.isOpen) {
+      popup.classList.add('show');
+      
+      // Auto-dismiss after 8 seconds if not manually closed
+      setTimeout(() => {
+        if (popup.classList.contains('show')) {
+          this.dismissIntroPopup();
+        }
+      }, 8000);
+    }
+  }
+
+  private dismissIntroPopup(): void {
+    const popup = this.container.querySelector('#nb-intro-popup');
+    if (popup) {
+      popup.classList.remove('show');
+    }
   }
 
   private resetConversation(): void {
