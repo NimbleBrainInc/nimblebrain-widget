@@ -1,6 +1,7 @@
 import './widget.css';
 import { NimbleBrainAPI, Agent, Conversation, Message } from './api';
 import brainLogoWhite from './assets/nimblebrain_logo_white.png';
+import { marked } from 'marked';
 
 interface WidgetOptions {
   agentId: string;
@@ -310,9 +311,50 @@ export class ChatWidget {
 
     const messageElement = document.createElement('div');
     messageElement.className = `nb-widget-message ${isUser ? 'user' : 'bot'}`;
-    messageElement.textContent = text;
+    
+    if (isUser) {
+      // User messages are always plain text for security
+      messageElement.textContent = text;
+      this.messagesContainer.appendChild(messageElement);
+    } else {
+      // Bot messages render markdown with clickable links
+      const html = marked.parse(text, {
+        breaks: true,
+        gfm: true
+      });
+      
+      if (typeof html === 'string') {
+        messageElement.innerHTML = html;
+        
+        // Ensure all links open in new tab
+        const links = messageElement.querySelectorAll('a');
+        links.forEach(link => {
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener noreferrer');
+        });
+        
+        this.messagesContainer.appendChild(messageElement);
+      } else {
+        // Handle Promise case (async parsing)
+        html.then(parsedHtml => {
+          messageElement.innerHTML = parsedHtml;
+          
+          // Ensure all links open in new tab
+          const links = messageElement.querySelectorAll('a');
+          links.forEach(link => {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+          });
+          
+          if (this.messagesContainer) {
+            this.messagesContainer.appendChild(messageElement);
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+          }
+        });
+        return; // Exit early to avoid double scroll
+      }
+    }
 
-    this.messagesContainer.appendChild(messageElement);
     this.messages.push({ text, isUser, id });
     
     // Scroll to bottom

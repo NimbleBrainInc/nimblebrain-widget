@@ -51,5 +51,8 @@
     "webpack": "^5.101.0",
     "webpack-cli": "^6.0.1",
     "wrangler": "^4.26.1"
+  },
+  "dependencies": {
+    "marked": "^16.2.1"
   }
 }

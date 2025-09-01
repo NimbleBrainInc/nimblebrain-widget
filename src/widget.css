@@ -310,6 +310,27 @@
   color: white;
 }
 
+.nb-widget-message.bot ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.nb-widget-message.bot ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.nb-widget-message.bot a {
+  color: #fff !important;
+  text-decoration: underline !important;
+  font-weight: 500;
+}
+
+.nb-widget-message.bot a:hover {
+  color: #e3f2fd !important;
+  text-decoration: none !important;
+}
+
 .nb-widget-typing {
   display: flex;
   align-items: center;
